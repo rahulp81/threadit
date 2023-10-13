@@ -1,4 +1,4 @@
-import { PostThread } from "@/app/components/forms/PostThread";
+import  PostThread  from "@/app/components/forms/PostThread";
 import { fetchUser } from "@/lib/actions/user.actions";
 import { currentUser } from "@clerk/nextjs"
 import { redirect } from "next/navigation"

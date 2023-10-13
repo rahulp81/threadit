@@ -15,6 +15,7 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'ThreadIt',
   description: 'A threads and Reddit Amalgation',
+  icons : '/assets/logo.svg'
 }
 
 export default function RootLayout({
