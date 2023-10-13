@@ -8,6 +8,7 @@ import LeftSideBar from '../components/shared/LeftSideBar';
 import RightSideBar from '../components/shared/RightSideBar';
 
 import '../globals.css'
+import { dark } from '@clerk/themes';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,21 +23,26 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        baseTheme: dark,
+      }}
+    >
       <html lang="en">
         <body className={inter.className}>
           <TopBar />
+
           <main className='flex flex-row'>
             <LeftSideBar />
-
             <section className='main-container'>
               <div className='w-full max-w-4xl'>
                 {children}
               </div>
             </section>
-
+            {/* @ts-ignore */}
             <RightSideBar />
           </main>
+
           <BottomBar />
         </body>
       </html>

@@ -11,12 +11,12 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Button } from '@/components/ui/button'
+} from "@/app/components/ui/form"
+import { Input } from "@/app/components/ui/input"
+import { Button } from '@/app/components/ui/button'
 import * as z from 'zod'
 import Image from 'next/image'
-import { Textarea } from '@/components/ui/textarea'
+import { Textarea } from '@/app/components/ui/textarea'
 import { isBase64Image } from '@/lib/utils'
 import { useUploadThing } from '@/lib/uploadthing'
 import { updateUser } from '@/lib/actions/user.actions'
