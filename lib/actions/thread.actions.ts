@@ -22,10 +22,15 @@ export async function fetchPosts(pageNumber = 1, pageSize = 20) {
     .populate({
       path: "author",
       model: User,
+      select: "id name image",
+    })
+    .populate({
+      path: "isQuote",
+      model: Thread,
     })
     .populate({
       path: "community",
-      model: Community,
+      model: Thread,
     })
     .populate({
       path: "children", // Populate the children field
@@ -49,26 +54,33 @@ export async function fetchPosts(pageNumber = 1, pageSize = 20) {
 }
 
 interface Params {
-  text: string,
-  author: string,
-  communityId: string | null,
-  path: string,
+  text: string;
+  author: string;
+  communityId: string | null;
+  path: string;
+  mediaType?: string | null;
+  mediaLink?: [string] | null;
 }
 
-export async function createThread({ text, author, communityId, path }: Params
-) {
+export async function createThread({
+  text,
+  author,
+  communityId,
+  path,
+  mediaType,
+  mediaLink,
+}: Params) {
   try {
     connectToDB();
-
-    const communityIdObject = await Community.findOne(
-      { id: communityId },
-      { _id: 1 }
-    );
 
     const createdThread = await Thread.create({
       text,
       author,
-      community: communityIdObject, // Assign communityId if provided, or leave it null for personal account
+      community: communityId, // Assign communityId if provided, or null for personal account
+      media: {
+        mediaType,
+        mediaLink,
+      },
     });
 
     // Update User model
@@ -76,14 +88,14 @@ export async function createThread({ text, author, communityId, path }: Params
       $push: { threads: createdThread._id },
     });
 
-    if (communityIdObject) {
+    if (communityId) {
       // Update Community model
-      await Community.findByIdAndUpdate(communityIdObject, {
+      await Community.findByIdAndUpdate(communityId, {
         $push: { threads: createdThread._id },
       });
     }
-
     revalidatePath(path);
+    return { sucess: `Created Post : ${createdThread._id}` };
   } catch (error: any) {
     throw new Error(`Failed to create thread: ${error.message}`);
   }
@@ -236,5 +248,73 @@ export async function addCommentToThread(
   } catch (err) {
     console.error("Error while adding comment:", err);
     throw new Error("Unable to add comment");
+  }
+}
+
+export async function toggleThreadLike({
+  threadId,
+  likeActionBy,
+  currentLikeStatus,
+}: {
+  threadId: String;
+  likeActionBy: String;
+  currentLikeStatus: Boolean;
+}) {
+  connectToDB();
+  try {
+    const thread = await Thread.findById(threadId);
+    if (!thread) {
+      throw new Error("Thread not found");
+    }
+    if (currentLikeStatus) {
+      // await Thread.updateOne(
+      //   { _id: threadId },
+      //   { $pull: { likes: likeActionBy } }
+      // );
+      thread.likes.pull(likeActionBy);
+      await thread.save();
+      return { sucess: "Thread Unliked " };
+    } else {
+      // await Thread.updateOne(
+      //   { _id: threadId },
+      //   { $addToSet : { likes: likeActionBy } }
+      // );
+      thread.likes.addToSet(likeActionBy);
+      await thread.save();
+      return { sucess: "Thread Liked " };
+    }
+  } catch (error) {
+    console.error("Error while toggling like:", error);
+    throw new Error("Unable to toggle like ");
+  }
+}
+
+export async function repostThread({
+  userId,
+  threadId,
+}: {
+  userId: string;
+  threadId: string;
+}) {
+  try {
+    connectToDB();
+    const user = await User.findOne({ id: userId });
+    if (!user) {
+      throw new Error("User doesnt Exist ");
+    }
+    const threadToRepost = Thread.findById(threadId);
+    if (!threadToRepost) {
+      throw new Error("Thread doesnt Exist ");
+    }
+    const repost = new Thread({
+      author: user._id,
+      isRepost: threadId,
+    });
+
+    const savedRepostThread = await repost.save();
+    console.log("saved is ", savedRepostThread);
+    return savedRepostThread._id;
+  } catch (error) {
+    console.error("Repost Error:", error);
   }
 }

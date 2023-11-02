@@ -1,31 +1,65 @@
 import Image from "next/image";
 import { currentUser } from "@clerk/nextjs";
-
-import { communityTabs } from "@/constants/sharedLinks";
-
+import { communityUserTabs, communityAdminTabs } from "@/constants/sharedLinks";
 import UserCard from "@/app/components/cards/UserCard";
 import ThreadsTab from "@/app/components/shared/ThreadsTab";
 import ProfileHeader from "@/app/components/shared/ProfileHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-
 import { fetchCommunityDetails } from "@/lib/actions/community.actions";
+import UserSearch from "@/app/components/shared/UserSearch";
+import CommunitySettings from "@/app/components/shared/CommunitySettings";
+
+
+export const revalidate = 0;
 
 async function Page({ params }: { params: { id: string } }) {
   const user = await currentUser();
   if (!user) return null;
 
   const communityDetails = await fetchCommunityDetails(params.id);
+  console.log(communityDetails.postSettings);
+
+
+  const isUserBanned = communityDetails.bannedUsers.some((buser: any) => user.id === buser.id)
+
+  if (isUserBanned) {
+    return <section className="text-white">
+      <div>You are banned from this community!</div>
+    </section>;
+  }
+
+  const noOfMembers = communityDetails.members.length
+  const isUserAdmin: boolean = communityDetails.createdBy.id == user.id || communityDetails.moderators.some((member: any) => member.id === user.id);
+  const isUserOwner = communityDetails.createdBy.id == user.id;
+  const communityTabs = isUserAdmin ? communityAdminTabs : communityUserTabs;
+  const isCurrentUserFollower = communityDetails.members.some((member: any) => member.id === user.id);
+  const communityMembers = communityDetails.members
+    .filter((member: any) => !(communityDetails.createdBy.id == member.id) &&
+      !(communityDetails.moderators.some((mod: any) => mod.id === member.id)))
+    .map((member: any) => ({
+      _id: member._id,
+      id: member.id,
+      name: member.name,
+      username: member.username,
+      image: member.image,
+    }));
+
+
 
   return (
     <section>
       <ProfileHeader
-        accountId={communityDetails.createdBy.id}
+        accountId={communityDetails.createdBy}
         authUserId={user.id}
         name={communityDetails.name}
-        username={communityDetails.username}
         imgUrl={communityDetails.image}
         bio={communityDetails.bio}
+        memberCount={communityDetails.members.length}
+        communityId={communityDetails.id}
         type='Community'
+        status={isCurrentUserFollower}
+        isOwner={isUserOwner}
+        noOfMembers={noOfMembers}
       />
 
       <div className='mt-9'>
@@ -41,12 +75,12 @@ async function Page({ params }: { params: { id: string } }) {
                   className='object-contain'
                 />
                 <p className='max-sm:hidden'>{tab.label}</p>
-
+                {/*
                 {tab.label === "Threads" && (
                   <p className='ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2'>
                     {communityDetails.threads.length}
                   </p>
-                )}
+                )} */}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -60,9 +94,81 @@ async function Page({ params }: { params: { id: string } }) {
             />
           </TabsContent>
 
-          <TabsContent value='members' className='mt-9 w-full text-light-1'>
-            <section className='mt-9 flex flex-col gap-10'>
-              {communityDetails.members.map((member: any) => (
+          <TabsContent value='settings' className='mt-9 w-full  text-light-1'>
+            {isUserOwner &&
+              <section className='mt-9 flex flex-col gap-5'>
+                <CommunitySettings communityId={communityDetails._id} communityPostSettings={communityDetails.postSettings} />
+              </section>
+            }
+            <section className='mt-9 flex flex-col gap-5'>
+              <h2>Moderators :</h2>
+              <UserCard
+                id={communityDetails.createdBy.id}
+                name={communityDetails.createdBy.name}
+                imgUrl={communityDetails.createdBy.image}
+                personType="User"
+                communityUserCard
+                username={communityDetails.createdBy.username}
+              />
+              {communityDetails.moderators.map((member: any) => (
+                <UserCard
+                  key={member.id}
+                  id={member.id}
+                  _id={member._id}
+                  name={member.name}
+                  username={member.username}
+                  imgUrl={member.image}
+                  personType='User'
+                  communityUserCard
+                  isOwner={isUserOwner}
+                  communityId={communityDetails.id}
+                  modId={user.id}
+                />
+              ))}
+            </section>
+
+            {communityDetails.bannedUsers.length > 0 &&
+              <section className='mt-9 flex flex-col gap-5'>
+                <h2>Banned Users  :</h2>
+                {communityDetails.bannedUsers.map((member: any) => (
+                  <UserCard
+                    key={member.id}
+                    id={member.id}
+                    _id={member._id}
+                    name={member.name}
+                    username={member.username}
+                    imgUrl={member.image}
+                    personType='User'
+                    communityUserCard
+                    isOwner={isUserOwner}
+                    communityId={communityDetails.id}
+                    modId={user.id}
+                    bannedUser
+                  />
+                ))}
+              </section>}
+
+            <section className="mt-10 flex flex-col gap-2">
+              <h2>Search Members :</h2>
+              <UserSearch communityUserCard isCommunityAdmin={isUserAdmin} members={communityMembers}
+                communityId={communityDetails.id} modId={user.id} />
+            </section>
+          </TabsContent>
+
+          <TabsContent value='about' className='w-full text-light-1'>
+            {/* @ts-ignore */}
+            <section className='mt-9 flex flex-col gap-5'>
+              <h2>Post Settings : {communityDetails.postSettings == 'public' ? 'Anyone Can Post' : 'Only Moderators can post'}</h2>
+              <h2>Moderators :</h2>
+              <UserCard
+                id={communityDetails.createdBy.id}
+                name={communityDetails.createdBy.name}
+                imgUrl={communityDetails.createdBy.image}
+                personType="User"
+                communityUserCard
+                username={communityDetails.createdBy.username}
+              />
+              {communityDetails.moderators.map((member: any) => (
                 <UserCard
                   key={member.id}
                   id={member.id}
@@ -70,18 +176,10 @@ async function Page({ params }: { params: { id: string } }) {
                   username={member.username}
                   imgUrl={member.image}
                   personType='User'
+                  communityUserCard
                 />
               ))}
             </section>
-          </TabsContent>
-
-          <TabsContent value='requests' className='w-full text-light-1'>
-            {/* @ts-ignore */}
-            <ThreadsTab
-              currentUserId={user.id}
-              accountId={communityDetails._id}
-              accountType='Community'
-            />
           </TabsContent>
         </Tabs>
       </div>

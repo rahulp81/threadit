@@ -19,6 +19,8 @@ import { Button } from "@/app/components/ui/button";
 
 import { CommentValidation } from "@/lib/validations/thread";
 import { addCommentToThread } from "@/lib/actions/thread.actions";
+import LoadingSpinner from "../shared/LoadingSpinner";
+import { useState } from "react";
 
 interface Props {
   threadId: string;
@@ -28,6 +30,7 @@ interface Props {
 
 function Comment({ threadId, currentUserImg, currentUserId }: Props) {
   const pathname = usePathname();
+  const [loading, setLoading] = useState(false)
 
   const form = useForm<z.infer<typeof CommentValidation>>({
     resolver: zodResolver(CommentValidation),
@@ -37,14 +40,23 @@ function Comment({ threadId, currentUserImg, currentUserId }: Props) {
   });
 
   const onSubmit = async (values: z.infer<typeof CommentValidation>) => {
-    await addCommentToThread(
-      threadId,
-      values.thread,
-      JSON.parse(currentUserId),
-      pathname
-    );
+    try {
+      setLoading(true)
+      await addCommentToThread(
+        threadId,
+        values.thread,
+        JSON.parse(currentUserId),
+        pathname
+      );
 
-    form.reset();
+      form.reset();
+    } catch (error) {
+      console.error('Error : ', error)
+    } finally {
+      form.reset();
+      setLoading(false)
+    }
+
   };
 
   return (
@@ -70,6 +82,7 @@ function Comment({ threadId, currentUserImg, currentUserId }: Props) {
                   {...field}
                   placeholder='Comment...'
                   className='no-focus text-light-1 outline-none'
+                  autoComplete="off"
                 />
               </FormControl>
             </FormItem>
@@ -77,7 +90,7 @@ function Comment({ threadId, currentUserImg, currentUserId }: Props) {
         />
 
         <Button type='submit' className='comment-form_btn'>
-          Reply
+          {loading ? <LoadingSpinner/> : 'Reply'}
         </Button>
       </form>
     </Form>

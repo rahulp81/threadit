@@ -159,3 +159,79 @@
 .comment-form_btn {
   @apply rounded-3xl bg-primary-500 px-8 py-2 !text-small-regular text-light-1 max-xs:w-full !important;
 }
+
+.slider {
+  position: relative;
+  /* height: 100vh; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.slider-preview {
+  overflow: auto;
+  min-height: 100vh;
+  min-width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (min-width: 600px) {
+  .slider {
+    height: 300px;
+  }
+}
+
+.image {
+  border-radius: 10px;
+  max-width: 100%;
+  max-height: 300px;
+  user-select: none;
+}
+
+.right-arrow {
+  position: absolute;
+  top: 50%;
+  right: -25px;
+  font-size: 2rem;
+  color: white;
+  z-index: 10;
+  cursor: pointer;
+  user-select: none;
+}
+
+.left-arrow {
+  position: absolute;
+  top: 50%;
+  left: -25px;
+  font-size: 2rem;
+  color: white;
+  z-index: 10;
+  cursor: pointer;
+  user-select: none;
+}
+
+.left-arrow-preview,
+.right-arrow-preview {
+  font-size: 35px;
+}
+
+.slide {
+  opacity: 0;
+  transition-duration: 0.5s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.slide.active {
+  opacity: 1;
+  transition-duration: 0.5s;
+  display: flex;
+  padding-inline: 10px;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+}

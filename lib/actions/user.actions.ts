@@ -22,6 +22,29 @@ export async function fetchUser(userId: string) {
   }
 }
 
+export async function fetchUserName(userId: string) {
+  try {
+    connectToDB();
+    const user = await User.findById(userId);
+    return user.username;
+  } catch (error: any) {
+    throw new Error(`Failed to fetch user: ${error.message}`);
+  }
+}
+
+export async function userInfoFrom_id(id :string ){
+  try {
+    connectToDB();
+    const user = await User.findById(id)
+    console.log('zzz', user.id , user.name ,  user.image , user._id.toString());
+    
+    return { id : user.id , name : user.name , image : user.image , _id : user._id.toString()}
+  } catch (error: any) {
+    throw new Error(`Failed to fetch user: ${error.message}`);
+  }
+};
+
+
 interface Params {
   userId: string;
   username: string;
@@ -29,6 +52,7 @@ interface Params {
   bio: string;
   image: string;
   path: string;
+  interests: number[];
 }
 
 export async function updateUser({
@@ -38,6 +62,7 @@ export async function updateUser({
   path,
   username,
   image,
+  interests,
 }: Params): Promise<void> {
   try {
     connectToDB();
@@ -50,6 +75,7 @@ export async function updateUser({
         bio,
         image,
         onboarded: true,
+        interests: interests,
       },
       { upsert: true }
     );
@@ -181,3 +207,5 @@ export async function getActivity(userId: string) {
     throw error;
   }
 }
+
+

@@ -22,6 +22,7 @@ function DeleteThread({
 }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+  
 
   if (currentUserId !== authorId || pathname === "/") return null;
 

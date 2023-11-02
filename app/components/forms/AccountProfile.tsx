@@ -22,6 +22,7 @@ import { useUploadThing } from '@/lib/uploadthing'
 import { updateUser } from '@/lib/actions/user.actions'
 import { usePathname } from 'next/navigation'
 import { useRouter } from 'next/navigation'
+import ProfileInterest from './ProfileInterest'
 
 interface Props {
     user: {
@@ -39,6 +40,7 @@ function AccountProfile({ user, btnTitle }:
     Props) {
 
     const [files, setFiles] = useState<File[]>([]);
+    const [interests, setInterests] = useState<number[]>([]);
     const { startUpload } = useUploadThing('media')
     const pathname = usePathname()
     const router = useRouter()
@@ -74,13 +76,14 @@ function AccountProfile({ user, btnTitle }:
             image: values.profile_photo,
             path: pathname,
             userId: user.id,
+            interests : interests
         })
 
-        if (pathname == '/profile/edit') {
-            router.back()
-        } else {
-            router.push('/')
-        }
+        // if (pathname == '/profile/edit') {
+        //     router.back()
+        // } else {
+        //     router.push('/')
+        // }
 
     }
 
@@ -193,7 +196,7 @@ function AccountProfile({ user, btnTitle }:
                             </FormLabel>
                             <FormControl className=''>
                                 <Textarea
-                                    rows={10}
+                                    rows={5}
                                     placeholder='Add your bio'
                                     className='account-form_input no-focus'
                                     {...field} />
@@ -202,7 +205,10 @@ function AccountProfile({ user, btnTitle }:
                         </FormItem>
                     )}
                 />
-                <Button type="submit" className='bg-primary-500'>{btnTitle}</Button>
+
+                <ProfileInterest interests={interests} setInterests={setInterests}/>
+
+                <Button disabled={interests.length < 3} type="submit" className='bg-violet-800'>{btnTitle}</Button>
             </form>
         </Form>
     )

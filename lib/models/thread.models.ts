@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 const threadSchema = new mongoose.Schema({
   text: {
     type: String,
-    required: true,
   },
   author: {
     type: mongoose.Schema.Types.ObjectId,
@@ -18,15 +17,28 @@ const threadSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  media: {
+    mediaType: String,
+    mediaLink: [String],
+  },
   parentId: {
     type: String,
   },
+  likes: [String],
   children: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Thread",
     },
   ],
+  isRepost: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Thread",
+  },
+  isQuote: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Thread",
+  },
 });
 
 const Thread = mongoose.models.Thread || mongoose.model("Thread", threadSchema);
