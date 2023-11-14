@@ -8,14 +8,22 @@ import ThreadsTab from "@/app/components/shared/ThreadsTab";
 import ProfileHeader from "@/app/components/shared/ProfileHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 
-import { fetchUser } from "@/lib/actions/user.actions";
+import { fetchUser, isUserFollowing } from "@/lib/actions/user.actions";
 
 async function Page({ params }: { params: { id: string } }) {
   const user = await currentUser();
   if (!user) return null;
 
   const userInfo = await fetchUser(params.id);
-  if (!userInfo?.onboarded) redirect("/onboarding");
+
+  const currentUserInfo = userInfo.id == user.id ? userInfo : await fetchUser(user.id);
+  if (!currentUserInfo?.onboarded) redirect("/onboarding");
+
+  const isUserFollower = userInfo._id == user.id ? null : await isUserFollowing({
+    currentUser: currentUserInfo._id,
+    actionUserId: userInfo._id
+  })
+
 
   return (
     <section>
@@ -26,6 +34,12 @@ async function Page({ params }: { params: { id: string } }) {
         username={userInfo.username}
         imgUrl={userInfo.image}
         bio={userInfo.bio}
+        type={'User'}
+        followCount={userInfo.followers.length}
+        followingCount={userInfo.following.length}
+        isUser={userInfo.id == user.id}
+        targetUserId={userInfo.id}
+        status={isUserFollower!}
       />
 
       <div className='mt-9'>
@@ -58,8 +72,9 @@ async function Page({ params }: { params: { id: string } }) {
             >
               {/* @ts-ignore */}
               <ThreadsTab
-                currentUserId={user.id}
-                accountId={userInfo.id}
+                currentUserId={currentUserInfo.id}
+                currentUser_ID={currentUserInfo._id}
+                accountId={userInfo._id}
                 accountType='User'
               />
             </TabsContent>

@@ -153,9 +153,98 @@
 
 /* Comment Form */
 .comment-form {
-  @apply mt-10 flex items-center gap-4 border-y border-y-dark-4 py-5 max-xs:flex-col !important;
+  @apply  flex items-center gap-4 border-y border-y-dark-4 py-5 max-xs:flex-col !important;
 }
 
 .comment-form_btn {
   @apply rounded-3xl bg-primary-500 px-8 py-2 !text-small-regular text-light-1 max-xs:w-full !important;
+}
+
+.slider {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.slider-preview {
+  overflow: auto;
+  min-height: 100vh;
+  min-width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (min-width: 600px) {
+  .slide {
+    height: 450px;
+  }
+}
+
+.image {
+  border-radius: 10px;
+  max-width: 100%;
+  object-fit: contain;
+  user-select: none;
+  max-height: 100%;
+}
+
+.right-arrow {
+  position: absolute;
+  top: 50%;
+  right: -10px;
+  font-size: 2rem;
+  color: white;
+  z-index: 10;
+  cursor: pointer;
+  user-select: none;
+}
+
+.left-arrow {
+  position: absolute;
+  top: 50%;
+  left: -10px;
+  font-size: 2rem;
+  color: white;
+  z-index: 10;
+  cursor: pointer;
+  user-select: none;
+}
+
+.left-arrow-preview{
+  position: absolute;
+  top: 50%;
+  left: 20px;
+  color: white;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.right-arrow-preview{
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  color: white;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.slide {
+  opacity: 0;
+  transition-duration: 0.5s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.slide.active {
+  opacity: 1;
+  transition-duration: 0.5s;
+  display: flex;
+  padding-inline: 10px;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
 }

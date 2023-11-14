@@ -7,12 +7,15 @@ import CommunityCard from "@/app/components/cards/CommunityCard";
 
 import { fetchUser } from "@/lib/actions/user.actions";
 import { fetchCommunities } from "@/lib/actions/community.actions";
+import { Button } from "@/app/components/ui/button";
+import CreateCommunityDialog from "@/app/components/shared/CreateCommunity";
 
 async function Page({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
+
   const user = await currentUser();
   if (!user) return null;
 
@@ -27,7 +30,11 @@ async function Page({
 
   return (
     <>
-      <h1 className='head-text'>Communities</h1>
+      <header className='head-text flex justify-between flex-wrap'>
+        <h1>Communities</h1>
+        <CreateCommunityDialog userId={user.id}/>
+      </header>
+
 
       <div className='mt-5'>
         <Searchbar routeType='communities' />

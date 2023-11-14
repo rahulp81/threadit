@@ -6,6 +6,7 @@ import ThreadCard from "@/app/components/cards/ThreadCard";
 
 import { fetchUser } from "@/lib/actions/user.actions";
 import { fetchThreadById } from "@/lib/actions/thread.actions";
+import CommentContainer from "@/app/components/shared/CommentContainer";
 
 export const revalidate = 0;
 
@@ -18,46 +19,40 @@ async function page({ params }: { params: { id: string } }) {
   const userInfo = await fetchUser(user.id);
   if (!userInfo?.onboarded) redirect("/onboarding");
 
-  const thread = await fetchThreadById(params.id);
+  const thread = await fetchThreadById(params.id) as any;
+
+  if (!thread) {
+    return <h2 className="text-[20px] text-white ">This Thread no Longer / Doesnt exists</h2>;
+  }
+
+  console.log(thread.comments, 'threadComment  ')
 
   return (
     <section className='relative'>
       <div>
         <ThreadCard
-          id={thread._id}
           currentUserId={user.id}
-          parentId={thread.parentId}
-          content={thread.text}
-          author={thread.author}
-          community={thread.community}
-          createdAt={thread.createdAt}
-          comments={thread.children}
+          thread={thread}
+          threadPage
+          CurrentUser_ID={userInfo._id}
         />
       </div>
 
       <div className='mt-7'>
         <Comment
           threadId={params.id}
-          currentUserImg={user.imageUrl}
+          currentUserImg={userInfo.image}
           currentUserId={JSON.stringify(userInfo._id)}
         />
       </div>
 
-      <div className='mt-10'>
-        {thread.children.map((childItem: any) => (
-          <ThreadCard
-            key={childItem._id}
-            id={childItem._id}
-            currentUserId={user.id}
-            parentId={childItem.parentId}
-            content={childItem.text}
-            author={childItem.author}
-            community={childItem.community}
-            createdAt={childItem.createdAt}
-            comments={childItem.children}
-            isComment
-          />
-        ))}
+      <div className='mt-2'>
+        <CommentContainer
+          currentUserId={userInfo._id}
+          currentUser={user.id}
+          comments={thread.comments}
+          threadId={params.id}
+        />
       </div>
     </section>
   );

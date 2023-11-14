@@ -1,16 +1,11 @@
 import mongoose from "mongoose";
 
 const communitySchema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: true,
-  },
-  username: {
-    type: String,
-    unique: true,
-    required: true,
-  },
   name: {
+    type: String,
+    required: true,
+  },
+  id: {
     type: String,
     required: true,
   },
@@ -19,7 +14,14 @@ const communitySchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
+    required: true,
   },
+  moderators: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   threads: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -27,6 +29,23 @@ const communitySchema = new mongoose.Schema({
     },
   ],
   members: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  ],
+  viewSettings: {
+    type: String,
+    enum: ["public", "restricted"],
+    required: true,
+  },
+  postSettings: {
+    type: String,
+    enum: ["public", "restricted"],
+    required: true,
+  },
+  bannedUsers: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
