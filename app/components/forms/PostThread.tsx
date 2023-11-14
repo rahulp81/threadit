@@ -50,7 +50,8 @@ function PostThread({ userId, image, communities, postAt, postLocationOptions }:
 
 
   const isPollDisabled = previewImages.length > 0 || previewGif.length > 0 || previewVideo.length > 0 || isPollActive
-  const isUploadDisabled = previewImages.length == 4 || previewGif.length > 0 || previewVideo.length > 0 || isPollActive;
+  // const isUploadDisabled = previewImages.length == 4 || previewGif.length > 0 || previewVideo.length > 0 || isPollActive;
+  const isUploadDisabled = true;
   useAutosizeTextArea(textAreaRef.current, threadtext);
 
   function handlePreviewDelete(deleteIndex: number) {
