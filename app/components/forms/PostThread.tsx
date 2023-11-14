@@ -319,7 +319,7 @@ function PostThread({ userId, image, communities, postAt, postLocationOptions }:
         }
 
         <div className="border-y mt-3 border-gray-700 rounded flex gap-3 py-2.5 px-4 ">
-          <button disabled={isUploadDisabled} className={`${isUploadDisabled && 'opacity-40'}`}  >
+          <button disabled={true} className={`${isUploadDisabled && 'opacity-40'}`}  >
             <Label htmlFor="file-upload" className={`${isUploadDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`} >
               <Image src={'/assets/create.svg'} height={25} width={25} alt="add image" />
               {!isUploadDisabled &&
