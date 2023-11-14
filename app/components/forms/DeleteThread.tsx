@@ -11,6 +11,10 @@ interface Props {
   authorId: string;
   parentId: string | null;
   isComment?: boolean;
+  isModerator?: boolean;
+  isOwner?: boolean;
+  isCommunityPost?: boolean;
+  isPostOfModerator?: boolean;
 }
 
 function DeleteThread({
@@ -19,12 +23,20 @@ function DeleteThread({
   authorId,
   parentId,
   isComment,
+  isCommunityPost,
+  isModerator,
+  isPostOfModerator,
 }: Props) {
   const pathname = usePathname();
   const router = useRouter();
-  
 
-  if (currentUserId !== authorId || pathname === "/") return null;
+  if (isCommunityPost && isPostOfModerator && (currentUserId !== authorId)) {
+    return null
+  } else if (isCommunityPost && !isPostOfModerator && !isModerator && (currentUserId !== authorId)) {
+    return null
+  } else if (!isCommunityPost && (currentUserId !== authorId)) {
+    return null
+  }
 
   return (
     <Image
@@ -32,9 +44,10 @@ function DeleteThread({
       alt='delte'
       width={18}
       height={18}
-      className='cursor-pointer object-contain'
+      className='ml-2 cursor-pointer object-contain'
       onClick={async () => {
-        await deleteThread(JSON.parse(threadId), pathname);
+        console.log('delete', pathname );
+        await deleteThread(threadId, pathname);
         if (!parentId || !isComment) {
           router.push("/");
         }

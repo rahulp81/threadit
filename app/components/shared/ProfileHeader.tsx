@@ -10,12 +10,15 @@ interface Props {
   username?: string;
   imgUrl: string;
   bio?: string;
-  type?: string;
-  memberCount?: number,
+  type?: 'Community' | 'User';
   status?: boolean,
   communityId?: string,
   isOwner?: boolean,
-  noOfMembers?: number
+  noOfMembers?: number,
+  followCount?: number;
+  followingCount?: number;
+  targetUserId?: string,
+  isUser?: boolean,
 }
 
 function ProfileHeader({
@@ -26,14 +29,16 @@ function ProfileHeader({
   imgUrl,
   bio,
   type,
-  memberCount,
   status,
   communityId,
   isOwner,
-  noOfMembers
+  noOfMembers,
+  followCount,
+  followingCount,
+  targetUserId,
+  isUser
 }: Props) {
 
-  console.log('profile header', status);
 
   return (
     <div className='flex w-full flex-col justify-start'>
@@ -52,12 +57,14 @@ function ProfileHeader({
             <h2 className='text-left text-heading3-bold text-light-1'>
               {name}
             </h2>
-            {accountId === authUserId && type !== "Community" && <p className='text-base-medium text-gray-1'> @{username}</p>}
+            {type == 'User' &&  <p className='text-base-medium text-gray-1'> @{username}</p>}
           </div>
 
-          {type == 'Community' &&
-            <ToggleStatus isOwner={isOwner!} currentStatus={status!} currentUserId={authUserId} communityId={communityId}
-              type="community" />
+          {type == 'Community' ?
+            <ToggleStatus isOwner={isOwner!} currentStatus={status as boolean} currentUserId={authUserId} communityId={communityId}
+              type="Community" /> :
+            <ToggleStatus isUser={isUser!} currentStatus={status as boolean} currentUserId={authUserId} targetUserId={targetUserId}
+              type="Profile" />
           }
 
         </div>
@@ -76,10 +83,18 @@ function ProfileHeader({
         )}
       </div>
 
-      <div className="mt-2 max-w-lg text-base-regular text-light-2 font-mono rounded w-fit py-1 px-2 text-[12px] bg-violet-950">
-        Members : {noOfMembers}</div>
+      <div className="mt-2 max-w-lg flex flex-wrap gap-3 text-base-regular text-light-2 font-mono  w-fit  text-[12px] ">
+        {
+          type == 'User' ?
+            <>
+              <span className="bg-violet-950 py-1 px-2 rounded">Followers : {followCount}</span>
+              <span className="bg-violet-950 py-1 px-2 rounded">Following : {followingCount}</span>
+            </> :
+            <span className="bg-violet-950 py-1 px-2">Members : {noOfMembers}</span>
+        }
+      </div>
 
-      <p className='mt-5 max-w-lg text-base-regular text-light-2'>{bio}</p>
+      <p className='mt-5 max-w-lg text-base-regular text-light-2 break-words '>{bio}</p>
 
       <div className='mt-12 h-0.5 w-full bg-dark-3' />
     </div>

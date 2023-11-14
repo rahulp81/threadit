@@ -1,5 +1,5 @@
 "use client"
-import React, { ChangeEvent, useState } from 'react'
+import React, { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { userValidation } from '@/lib/validations/user'
@@ -19,10 +19,13 @@ import Image from 'next/image'
 import { Textarea } from '@/app/components/ui/textarea'
 import { isBase64Image } from '@/lib/utils'
 import { useUploadThing } from '@/lib/uploadthing'
-import { updateUser } from '@/lib/actions/user.actions'
+import { checkUsername, updateUser } from '@/lib/actions/user.actions'
 import { usePathname } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 import ProfileInterest from './ProfileInterest'
+import { clerkClient } from '@clerk/nextjs';
+import LoadingSpinner from '../shared/LoadingSpinner'
+
 
 interface Props {
     user: {
@@ -40,10 +43,13 @@ function AccountProfile({ user, btnTitle }:
     Props) {
 
     const [files, setFiles] = useState<File[]>([]);
-    const [interests, setInterests] = useState<number[]>([]);
+    const [loading , setLoading] = useState(false);
+    const [usernameTaken, setIsUsernameTaken] = useState(false);
     const { startUpload } = useUploadThing('media')
     const pathname = usePathname()
     const router = useRouter()
+    const timeoutId = useRef<NodeJS.Timeout>()
+
 
     const form = useForm({
         resolver: zodResolver(userValidation),
@@ -55,8 +61,40 @@ function AccountProfile({ user, btnTitle }:
         }
     })
 
+    const watchUsername = form.watch('username');
+
+
+    useEffect(() => {
+        if (!(user?.username == watchUsername)) {
+            const checkUsernameAvailability = async () => {
+                const isUsernameTaken = await checkUsername(watchUsername);
+                form.setError("username", {
+                    type: "manual",
+                    message: isUsernameTaken ? "Username is already taken" : "",
+                });
+                setIsUsernameTaken(isUsernameTaken)
+            };
+
+            // Use setTimeout for debounce
+            timeoutId.current = setTimeout(() => {
+                if (watchUsername) {
+                    checkUsernameAvailability();
+                }
+            }, 300);
+
+            return () => clearTimeout(timeoutId.current); // Clear the timeout on component unmount or when watchUsername changes
+        }else{
+            setIsUsernameTaken(false);
+            form.setError("username", {
+                type: "manual",
+                message: "",
+            });
+        }
+
+    }, [watchUsername, form]);
 
     async function onSubmit(values: z.infer<typeof userValidation>) {
+        setLoading(true)
         const blob = values.profile_photo;
         const imageChanged = isBase64Image(blob);
 
@@ -66,25 +104,32 @@ function AccountProfile({ user, btnTitle }:
             if (imageRes && imageRes[0].url) {
                 values.profile_photo = imageRes[0].url;
             }
-
         }
 
-        await updateUser({
-            username: values.username,
-            name: values.name,
-            bio: values.bio,
-            image: values.profile_photo,
-            path: pathname,
-            userId: user.id,
-            interests : interests
-        })
+        try {
+            const res = await updateUser({
+                username: values.username,
+                name: values.name,
+                bio: values.bio,
+                image: values.profile_photo,
+                path: pathname,
+                userId: user.id,
+            })
 
-        // if (pathname == '/profile/edit') {
-        //     router.back()
-        // } else {
-        //     router.push('/')
-        // }
 
+            if (pathname == '/profile/edit') {
+                router.back()
+            } else {
+                router.push('/')
+            }
+
+
+        } catch (error: any) {
+            alert(error)
+            console.log(error);
+        }finally {
+            setLoading(true)
+        }
     }
 
     const handleImage = (
@@ -171,6 +216,15 @@ function AccountProfile({ user, btnTitle }:
                 <FormField
                     control={form.control}
                     name="username"
+                    rules={{
+                        required: 'Username is required',
+                        validate: async (value) => {
+                            const isUsernameTaken = await checkUsername(value);
+                            return isUsernameTaken
+                                ? 'Username is already taken'
+                                : 'Cool';
+                        },
+                    }}
                     render={({ field }) => (
                         <FormItem className='flex flex-col gap-3 w-full'>
                             <FormLabel className='text-base-semibold text-light-2'>
@@ -206,9 +260,10 @@ function AccountProfile({ user, btnTitle }:
                     )}
                 />
 
-                <ProfileInterest interests={interests} setInterests={setInterests}/>
 
-                <Button disabled={interests.length < 3} type="submit" className='bg-violet-800'>{btnTitle}</Button>
+                <Button disabled={usernameTaken} type="submit" className='bg-violet-800'>
+                    {loading ? <LoadingSpinner /> : btnTitle}
+                </Button>
             </form>
         </Form>
     )

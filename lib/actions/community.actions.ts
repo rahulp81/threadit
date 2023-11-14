@@ -273,32 +273,63 @@ export async function unBanUser({
   }
 }
 
-export async function fetchCommunityPosts(id: string) {
+export async function fetchCommunityPosts(community_Id: string) {
   try {
     connectToDB();
 
-    const communityPosts = await Community.findById(id).populate({
-      path: "threads",
-      model: Thread,
-      populate: [
-        {
-          path: "author",
-          model: User,
-          select: "name image id", // Select the "name" and "_id" fields from the "User" model
-        },
-        {
-          path: "children",
-          model: Thread,
-          populate: {
+    const postsQuery = Thread.find({
+      parentId: { $in: [null, undefined] },
+      community: community_Id,
+    })
+      .sort({ createdAt: "desc" })
+      // .skip(skipAmount)
+      // .limit(pageSize)
+      .populate({
+        path: "author",
+        model: User,
+        select: "id name image username",
+      })
+      .populate({
+        path: "isQuote",
+        model: Thread,
+      })
+      .populate({
+        path: "community",
+        model: Community,
+      })
+      .populate({
+        path: "isRepost",
+        model: Thread,
+      })
+      .populate({
+        path: "comments",
+        model: Thread,
+        populate: [
+          {
             path: "author",
             model: User,
-            select: "image _id", // Select the "name" and "_id" fields from the "User" model
+            select: "id name image username",
           },
-        },
-      ],
-    });
+          {
+            path: "comments",
+            model: Thread,
+            populate: [
+              {
+                path: "author",
+                model: User,
+                select: "id name image username",
+              },
+            ],
+          },
+        ],
+      });
 
-    return communityPosts;
+    postsQuery.lean();
+
+    const posts = await postsQuery.exec();
+    // const isNext = totalPostsCount > skipAmount + posts.length;
+    // return { posts, isNext };
+    return posts;
   } catch (error) {
     // Handle any errors
     console.error("Error fetching community posts:", error);
@@ -388,13 +419,14 @@ export async function addMemberToCommunity(
       throw new Error("User is already a member of the community");
     }
 
-    // Add the user's _id to the members array in the community
-    community.members.push(user._id);
+    // Add the user's _id to the members array in the community using $addToSet
+    community.members.addToSet(user._id);
     await community.save();
 
-    // Add the community's _id to the communities array in the user
-    user.communities.push(community._id);
+    // Add the community's _id to the communities array in the user using $addToSet
+    user.communities.addToSet(community._id);
     await user.save();
+
     revalidatePath(`/communities/${communityId}`);
     return { success: true };
   } catch (error) {
@@ -505,6 +537,33 @@ export async function deleteCommunity(communityId: string) {
     return deletedCommunity;
   } catch (error) {
     console.error("Error deleting community: ", error);
+    throw error;
+  }
+}
+
+export async function getUserCommunities(user_Id: string) {
+  try {
+    connectToDB();
+
+    const userInfo = await User.findById(user_Id);
+
+    const communities = await Community.find({
+      _id: { $in: userInfo?.communities },
+      bannedUsers: { $nin: [userInfo._id] }, // Exclude communities where the user is banned
+      $or: [
+        { postSettings: "public" },
+        {
+          postSettings: "restricted",
+          $or: [
+            { createdBy: userInfo._id },
+            { moderators: { $in: [userInfo._id] } },
+          ],
+        },
+      ],
+    });
+    return communities;
+  } catch (error) {
+    console.error("Error getting community: ", error);
     throw error;
   }
 }

@@ -185,6 +185,9 @@ function PostThread({ userId, image, communities, postAt, postLocationOptions }:
       const communityId = (postThreadAt?.name == 'Profile' && !(postThreadAt._id)) ? null : postThreadAt._id;
       const res = await createThread({ text: threadtext, author: userId, communityId, path, mediaLink: mediaUploadedLink, mediaType })
       console.log(res);
+      if(res.sucess){
+        router.push(`/thread/${res.id}`)
+      }
     } catch (error) {
       console.error('Error posting thread:', error)
     } finally {
@@ -325,7 +328,7 @@ function PostThread({ userId, image, communities, postAt, postLocationOptions }:
               }
             </Label>
           </button>
-          <button disabled={isPollDisabled} className={`${isPollDisabled && 'opacity-40'} text-white flex `} onClick={() => { setIsPollActive(true) }}  >
+          <button disabled={true} className={`opacity-40 hover:cursor-not-allowed text-white flex `} onClick={() => { setIsPollActive(true) }}  >
             <Image src={'/assets/poll.svg'} height={25} width={25} alt="add poll" />Poll
           </button>
           <div className="font-mono text-primary-500 ml-auto mr-4">

@@ -41,7 +41,7 @@ export default function RootLayout({
               </div>
             </section>
             {/* @ts-ignore */}
-            <RightSideBar />
+            {/* <RightSideBar /> */}
           </main>
 
           <BottomBar />

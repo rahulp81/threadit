@@ -5,9 +5,13 @@ import UserCard from "@/app/components/cards/UserCard";
 import ThreadsTab from "@/app/components/shared/ThreadsTab";
 import ProfileHeader from "@/app/components/shared/ProfileHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import { fetchCommunityDetails } from "@/lib/actions/community.actions";
+import { fetchCommunityDetails, getUserCommunities } from "@/lib/actions/community.actions";
 import UserSearch from "@/app/components/shared/UserSearch";
 import CommunitySettings from "@/app/components/shared/CommunitySettings";
+import PostThread from "@/app/components/forms/PostThread";
+import { fetchUser } from "@/lib/actions/user.actions";
+import { redirect } from "next/navigation";
+import Community from "@/lib/models/community.models";
 
 
 export const revalidate = 0;
@@ -17,8 +21,14 @@ async function Page({ params }: { params: { id: string } }) {
   if (!user) return null;
 
   const communityDetails = await fetchCommunityDetails(params.id);
-  console.log(communityDetails.postSettings);
+  console.log('by', communityDetails);
 
+
+  const userInfo = await fetchUser(user.id)
+
+  if (!userInfo?.onboarded) redirect('/onboarding');
+
+  const communities = await getUserCommunities(userInfo._id);
 
   const isUserBanned = communityDetails.bannedUsers.some((buser: any) => user.id === buser.id)
 
@@ -54,7 +64,6 @@ async function Page({ params }: { params: { id: string } }) {
         name={communityDetails.name}
         imgUrl={communityDetails.image}
         bio={communityDetails.bio}
-        memberCount={communityDetails.members.length}
         communityId={communityDetails.id}
         type='Community'
         status={isCurrentUserFollower}
@@ -75,20 +84,23 @@ async function Page({ params }: { params: { id: string } }) {
                   className='object-contain'
                 />
                 <p className='max-sm:hidden'>{tab.label}</p>
-                {/*
                 {tab.label === "Threads" && (
                   <p className='ml-1 rounded-sm bg-light-4 px-2 py-1 !text-tiny-medium text-light-2'>
                     {communityDetails.threads.length}
                   </p>
-                )} */}
+                )}
               </TabsTrigger>
             ))}
           </TabsList>
 
           <TabsContent value='threads' className='w-full text-light-1'>
             {/* @ts-ignore */}
+            {/* <PostThread/> */}
+            {/* <PostThread userId={userInfo._id} image={userInfo.image} communities={communities}
+              postLocationOptions={postLocationOptions} postAt={{ name: 'Profile', image: userInfo.image }} /> */}
             <ThreadsTab
               currentUserId={user.id}
+              currentUser_ID= {userInfo._id}
               accountId={communityDetails._id}
               accountType='Community'
             />

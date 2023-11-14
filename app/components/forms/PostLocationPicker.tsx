@@ -39,7 +39,7 @@ function PostLocation({ postLocationOptions, postThreadAt, setPostThreadAt }: Po
                     }}
                     renderOption={(props, option) => (
                         <li key={option.name}   {...props}>
-                            <img height={30} width={30} className='rounded-full mr-2' src={option.image} alt="icon" />
+                            <img height={30} width={30} className='rounded-full mr-2' src={option.image || '/assets/communityB.svg'} alt="icon" />
                             <span>{option.name}</span>
                         </li>
                     )}

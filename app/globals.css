@@ -153,7 +153,7 @@
 
 /* Comment Form */
 .comment-form {
-  @apply mt-10 flex items-center gap-4 border-y border-y-dark-4 py-5 max-xs:flex-col !important;
+  @apply  flex items-center gap-4 border-y border-y-dark-4 py-5 max-xs:flex-col !important;
 }
 
 .comment-form_btn {
@@ -162,11 +162,9 @@
 
 .slider {
   position: relative;
-  /* height: 100vh; */
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 200px;
 }
 
 .slider-preview {
@@ -179,22 +177,23 @@
 }
 
 @media (min-width: 600px) {
-  .slider {
-    height: 300px;
+  .slide {
+    height: 450px;
   }
 }
 
 .image {
   border-radius: 10px;
   max-width: 100%;
-  max-height: 300px;
+  object-fit: contain;
   user-select: none;
+  max-height: 100%;
 }
 
 .right-arrow {
   position: absolute;
   top: 50%;
-  right: -25px;
+  right: -10px;
   font-size: 2rem;
   color: white;
   z-index: 10;
@@ -205,7 +204,7 @@
 .left-arrow {
   position: absolute;
   top: 50%;
-  left: -25px;
+  left: -10px;
   font-size: 2rem;
   color: white;
   z-index: 10;
@@ -213,9 +212,22 @@
   user-select: none;
 }
 
-.left-arrow-preview,
-.right-arrow-preview {
-  font-size: 35px;
+.left-arrow-preview{
+  position: absolute;
+  top: 50%;
+  left: 20px;
+  color: white;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.right-arrow-preview{
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  color: white;
+  z-index: 10;
+  cursor: pointer;
 }
 
 .slide {
@@ -224,6 +236,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 300px;
 }
 
 .slide.active {

@@ -21,11 +21,16 @@ const threadSchema = new mongoose.Schema({
     mediaType: String,
     mediaLink: [String],
   },
-  parentId: {
-    type: String,
-  },
   likes: [String],
-  children: [
+  parentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Thread",
+  },
+  threadPostId : {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Thread",
+  },
+  comments: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Thread",

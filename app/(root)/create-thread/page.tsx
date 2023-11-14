@@ -1,5 +1,5 @@
 import PostThread from "@/app/components/forms/PostThread";
-import { fetchCommunities } from "@/lib/actions/community.actions";
+import { fetchCommunities, getUserCommunities } from "@/lib/actions/community.actions";
 import { fetchUser } from "@/lib/actions/user.actions";
 import Community from "@/lib/models/community.models";
 import { currentUser } from "@clerk/nextjs"
@@ -15,7 +15,7 @@ async function page() {
 
     if (!userInfo?.onboarded) redirect('/onboarding');
 
-    const communities = await Community.find({ _id: { $in: userInfo.communities}});
+    const communities = await getUserCommunities(userInfo._id);
 
     const postLocationOptions = (communities && communities.length > 0) ?
     [{ name: 'Profile', image: userInfo.image }, ...communities] : [{ name: 'Profile', image: userInfo.image }];

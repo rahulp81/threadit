@@ -33,6 +33,18 @@ const userSchema = new mongoose.Schema({
     },
   ],
   interests: [Number],
+  following :[
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    }
+  ],
+  followers :[
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    }
+  ]
 });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);

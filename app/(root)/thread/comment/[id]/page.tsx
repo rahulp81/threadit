@@ -19,39 +19,34 @@ async function page({ params }: { params: { id: string } }) {
   const userInfo = await fetchUser(user.id);
   if (!userInfo?.onboarded) redirect("/onboarding");
 
-  const thread = await fetchThreadById(params.id) as any;
+  const commentThreadChain = await fetchThreadById(params.id) as any;
 
-  if (!thread) {
-    return <h2 className="text-[20px] text-white ">This Thread no Longer / Doesnt exists</h2>;
+  const mainThreadPost = await fetchThreadById(commentThreadChain.threadPostId) as any;
+
+  if (!(commentThreadChain && mainThreadPost)) {
+    return <h2 className="text-[20px] text-white ">This Thread no Longer / Doesnt exists </h2>;
   }
-
-  console.log(thread.comments, 'threadComment  ')
 
   return (
     <section className='relative'>
       <div>
         <ThreadCard
           currentUserId={user.id}
-          thread={thread}
+          thread={mainThreadPost}
           threadPage
           CurrentUser_ID={userInfo._id}
         />
       </div>
 
-      <div className='mt-7'>
-        <Comment
-          threadId={params.id}
-          currentUserImg={userInfo.image}
-          currentUserId={JSON.stringify(userInfo._id)}
-        />
-      </div>
 
-      <div className='mt-2'>
+      <div className='mt-10'>
         <CommentContainer
           currentUserId={userInfo._id}
           currentUser={user.id}
-          comments={thread.comments}
-          threadId={params.id}
+          comments={commentThreadChain}
+          threadId={mainThreadPost._id}
+          threadCommentPage={commentThreadChain._id}
+          threadChainComments={commentThreadChain.comments}
         />
       </div>
     </section>
